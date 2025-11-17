@@ -43,10 +43,10 @@ static NSUInteger getStyleMask(_GLFWwindow* window)
     {
         styleMask |= NSWindowStyleMaskTitled |
                      NSWindowStyleMaskClosable;
-
-        if (window->resizable)
-            styleMask |= NSWindowStyleMaskResizable;
     }
+    
+    if (window->resizable)
+        styleMask |= NSWindowStyleMaskResizable;
 
     return styleMask;
 }
@@ -413,7 +413,13 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 }
 
 - (void)mouseDown:(NSEvent *)event
-{
+{    
+    if(!_glfw.hints.window.titlebar)
+        if([event type] & NSEventTypeLeftMouseDown && 
+            [event locationInWindow].y > [self bounds].size.height - 50) {
+            [[self window] performWindowDragWithEvent:event];
+        }
+
     _glfwInputMouseClick(window,
                          GLFW_MOUSE_BUTTON_LEFT,
                          GLFW_PRESS,
