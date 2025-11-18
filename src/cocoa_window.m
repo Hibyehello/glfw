@@ -413,17 +413,22 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 }
 
 - (void)mouseDown:(NSEvent *)event
-{    
-    if(!_glfw.hints.window.titlebar)
-        if([event type] & NSEventTypeLeftMouseDown && 
-            [event locationInWindow].y > [self bounds].size.height - 50) {
-            [[self window] performWindowDragWithEvent:event];
-        }
-
+{
     _glfwInputMouseClick(window,
-                         GLFW_MOUSE_BUTTON_LEFT,
-                         GLFW_PRESS,
-                         translateFlags([event modifierFlags]));
+                        GLFW_MOUSE_BUTTON_LEFT,
+                        GLFW_PRESS,
+                        translateFlags([event modifierFlags]));
+
+    if(!_glfw.hints.window.titlebar && [event type] & NSEventTypeLeftMouseDown) {
+        if(window->callbacks.tbhittest) {
+            NSPoint locationInView = [self convertPoint:[event locationInWindow] fromView:nil];
+            int hit = 0;
+            window->callbacks.tbhittest(window, (int)locationInView.x, (int)locationInView.y, &hit);
+            if(hit) {
+                [[self window] performWindowDragWithEvent:event];
+            }
+        }
+    }
 }
 
 - (void)mouseDragged:(NSEvent *)event
