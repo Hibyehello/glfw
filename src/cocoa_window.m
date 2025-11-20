@@ -39,6 +39,12 @@ static NSUInteger getStyleMask(_GLFWwindow* window)
 
     if (window->monitor || !window->decorated)
         styleMask |= NSWindowStyleMaskBorderless;
+    else if(!_glfw.hints.window.titlebar)
+    {
+        styleMask |= NSWindowStyleMaskResizable
+                    | NSWindowStyleMaskTitled
+                    | NSWindowStyleMaskFullSizeContentView;
+    }
     else
     {
         styleMask |= NSWindowStyleMaskTitled |
@@ -861,6 +867,16 @@ static GLFWbool createNativeWindow(_GLFWwindow* window,
 
     window->ns.view = [[GLFWContentView alloc] initWithGlfwWindow:window];
     window->ns.retina = wndconfig->ns.retina;
+
+    if (!_glfw.hints.window.titlebar)
+    {
+        [window->ns.object setTitlebarAppearsTransparent:YES];
+        [window->ns.object setTitleVisibility:NSWindowTitleHidden];
+
+        [[window->ns.object standardWindowButton:NSWindowCloseButton] setHidden:YES];
+        [[window->ns.object standardWindowButton:NSWindowMiniaturizeButton] setHidden:YES];
+        [[window->ns.object standardWindowButton:NSWindowZoomButton] setHidden:YES];
+    }
 
     if (fbconfig->transparent)
     {
